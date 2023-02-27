@@ -118,12 +118,12 @@ def writeouts (outs):
                 output.write(f'{element},')
             output.write('\n')
 
-def getallouts (_path_,histor):
+def getallouts (_path_,histor,miles):
     simdat = outreadin(_path_)
     print('yay')
     histdattmp = readhist(histor)
     print('yay2')
-    histdat = convertflow(histdattmp)
+    histdat = convertflow(histdattmp,miles)
     print('yay3')
     omean = histmean(histdat)
     print('yay4')

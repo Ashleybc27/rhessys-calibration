@@ -54,10 +54,10 @@ def fixind(parms):
 def parmrange(parms,parmsss):
     litall=list()
     for i in parms:
-        ind1=(i[0]-1)
-	print(ind1)
-        ind2=(i[1]-1)
-	print(ind2)
+        ind1=(int(i[0]))
+	#print(ind1)
+        ind2=(int(i[1]))
+	#print(ind2)
         litall.append(parmsss[ind1][ind2])
     v1=list()
     v2=list()
