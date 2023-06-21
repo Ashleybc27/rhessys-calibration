@@ -1,5 +1,8 @@
 #bulk processing of rhessys output files###
 import os
+import numpy as np
+import hydroeval as he
+
 ##############################################################
 def outreadin(_path_): # function using these indices
     parsable = os.listdir(_path_)
@@ -19,15 +22,48 @@ def outreadin(_path_): # function using these indices
         tmpp=list()
         for j in all:
             if int(j[0]) == 1979 and int(j[1]) >= 10:
-                tmpp.append([j[2],j[1],j[0],j[3],j[4],j[5]])
+                tmpp.append([int(j[2]),int(j[1]),int(j[0]),float(j[3]),int(j[4]),int(j[5])])
             if int(j[0]) >=1980:
-                tmpp.append([j[2],j[1],j[0],j[3],j[4],j[5]])
+                tmpp.append([int(j[2]),int(j[1]),int(j[0]),float(j[3]),int(j[4]),int(j[5])])
             else:
                 pass
-        simout.append(tmpp) 
+        sssmmmoootttthhh = smooth3dsim(tmpp)###adding smoothing 
+        print(sssmmmoootttthhh[0])
+        simout.append(sssmmmoootttthhh) 
     return(simout)
 
-#simdat = outreadin(path)
+def smooth3dsim(input):
+    back=input
+    smoothed=list()
+    #back.insert(0,input[0])
+    #print(back[0:2])
+    #back.append(input[-1])
+    lst=len(back)-1
+    print(lst)
+    print
+    for j in back:
+        if back.index(j)==0 or back.index(j)==lst:
+            pass
+            print(back.index(j))
+            print(j)
+        else:
+           #print(j)
+            idx = back.index(j)
+            #print(idx)
+            bf=idx+1
+            aft=idx-1
+            avg=(float(back[bf][3])+ float(back[idx][3])+ float(back[aft][3]))/3
+        ##need to index across a few lists, how to do that?
+            smoothed.append([int(j[2]),int(j[1]),int(j[0]),float(avg),int(j[4]),int(j[5])])
+    fnt=(float(input[0][3]) + float(input[0][3]) + float(input[1][3]))/3
+    ed = (float(input[-1][3]) + float(input[-1][3]) + float(input[-2][3]))/3
+    print(fnt)
+    print(ed)
+    smoothed.insert(0,[input[0][0],input[0][1],input[0][2],fnt,input[0][4],input[0][5]]) 
+    smoothed.append([input[-1][0],input[-1][1],input[-1][2],ed,input[-1][4],input[-1][5]])
+    return(smoothed)
+simdat = outreadin(path)
+simdat[1][4][5]
 
 def readhist (file):
     histor=file
@@ -41,14 +77,60 @@ def readhist (file):
     print(tmp[0])
     return(tmp)
 
-#miles2=182.009609
-def convertflow(tmp,miles2):
+miles2=182.009609 
+def convertflow(tmp,miles2):  #convert to mm/day
     obs=list()
+    milesconv= miles2*2589988110000
     for ech in tmp:
-        lix = float(ech[2])/(miles2*27878400)*304.8*60*60*24 #convert to mm/day
-        obs.append([ech[1],lix])
+        lix = (float(ech[2])*28316846.37) ##cubic ft to cubic mm per second
+        lix2 = lix * 86400 ##cubic mm per day
+        lix3= lix2/milesconv ##over basin area to mm/day
+        obs.append([ech[1],lix3])
     print(obs[4])
     return(obs)
+
+def smooth3d(input):
+    back=input
+    smoothed=list()
+    #back.insert(0,input[0])
+    #print(back[0:2])
+    #back.append(input[-1])
+    lst=len(back)-1
+    print(lst)
+    print
+    for j in back:
+        if back.index(j)==0 or back.index(j)==lst:
+            pass
+            print(back.index(j))
+            print(j)
+        else:
+           #print(j)
+            idx = back.index(j)
+            #print(idx)
+            bf=idx+1
+            aft=idx-1
+            avg=(back[bf][1]+back[idx][1]+back[aft][1])/3
+        ##need to index across a few lists, how to do that?
+            smoothed.append([j[0],avg])
+    fnt=(input[0][1] + input[0][1] + input[2][1])/3
+    ed = (input[-1][1] + input[-1][1] + input[-2][1])/3
+    print(fnt)
+    print(ed)
+    smoothed.insert(0,[input[0][0],fnt]) 
+    smoothed.append([input[-1][0],ed])
+    return(smoothed)
+
+print(histdat[3652:3655])
+test=smooth3d(histdat)
+len(histdat)
+len(test)
+print(test[-1])
+print(test[0:3])
+print(histdat[1])
+print(histdat[-2])
+
+len(simdat[17])
+
 
 #histor=('/Users/ashley/Documents/Modeling/spanishcreek/calibration/stream/calibstreamflow.csv')
 #histdattmp= readhist(histor)
@@ -71,14 +153,41 @@ def histmean(obs):
 ##print(simdat[0][-1])
 ##print(histdat[-1])
 ##indexes line up :) 
+smlsim= simdat[3]
+onesim=[]
+for o in smlsim:
+    smlsimval=float(o[3])
+    onesim.append(smlsimval)
+print(onesim)
+print(smlsim)
+histvals=[]
+for p in histdat:
+    valls=float(p[1])
+    histvals.append(valls)
+print(histvals)
+
+tst=he.nse(np.array(onesim),np.array(histvals))
+print(tst)
+
+print(something)
 
 def getcalcs (simdat,histdat,omean):
     outs=list()
+    histvals=[]
+    for p in histdat:
+        valls=float(p[1])
+        histvals.append(valls)
     for k in simdat:
-        nsx = nse(k,histdat,omean)
+        singlesim = k
+        onesim=[]
+        for o in singlesim:
+            smlsimvals=float(o[3])
+            onesim.append(smlsimvals)
+        nsx = he.nse(np.array(onesim),np.array(histvals))
+        nnsx = nnse(nsx)
         pbs = pbias(k,histdat)
         #rsq = rsqu(k,histdat,omean)
-        outs.append([nsx,pbs,k[0][4],k[0][5]])
+        outs.append([nsx,nnsx, pbs,k[0][4],k[0][5]])
     return(outs)
 
 #test= getcalcs(simdat,histdat,omean)
@@ -92,6 +201,10 @@ def nse (simdat,histdat, omean):
         bm1 += ((histdat[simdat.index(i)][1]- float(omean))**2)
     nse = 1 - (tp1/bm1)
     return(nse)
+
+def nnse(nse):
+    nnse = 1/(2-nse)
+    return(nnse)
 
 def rsqu (simdat,histdat,omean):
     t=0
@@ -125,11 +238,13 @@ def getallouts (_path_,histor,miles):
     print('yay2')
     histdat = convertflow(histdattmp,miles)
     print('yay3')
-    omean = histmean(histdat)
+    smoothin = smooth3d(histdat)
+    print('yay3.5')
+    omean = histmean(smoothin)
     print('yay4')
     outs = getcalcs (simdat, histdat, omean)
     print('sheworks :)')
-    writeouts(outs)
+    #writeouts(outs)
     return(outs)
 
 

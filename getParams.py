@@ -1,6 +1,8 @@
 ####get params### 
 #from rhsprocess import PostProc as pp
 import os
+import hydroeval as he
+import matplotlib.pyplot as plt
 
 #path='/Users/ashley/Documents/Modeling/spanishcreek/calibration/outs/'
 #histor='/Users/ashley/Documents/Modeling/spanishcreek/calibration/stream/calibstreamflow.csv'
@@ -9,20 +11,57 @@ import os
 #print(test)
 #test.sort(key=lambda x: x[0], reverse=True)
 #est
+##plotly <- plot
+
 
 def paramindx(outs):
-    outs.sort(key=lambda x: x[0], reverse=True)
+    outs.sort(key=lambda x: x[1], reverse=True) #sort based on nnse
     set1=list()
     for i in outs[0:10]:
         print(i)
         if i[0] <= 1:
-            set1.append([i[2],i[3]])
+            set1.append(i)
         else:
             pass
     return(set1)
 
-#parms=paramindx(test)
+parms=paramindx(test)
 #print(parms)
+
+def plotgood (simdat,histdat,paramindx): ##use smoothed data here 
+    plotdata = []
+    for i in simdat:
+        for j in paramindx:
+            num = j[4]
+            print(num)
+            if i[1][5] == num:  
+                plotdata.append(i)
+            else:
+                pass
+    return(plotdata)
+
+ptest = plotgood(simdat,smth,parms)  
+
+def getdata (plotdata): ##I loose the indexing this way but that's okay for now
+    datavals = []
+    for k in plotdata:
+        listvals=[]
+        for h in k:
+            listvals.append(h[3])
+        datavals.append([listvals])  
+    return(datavals)
+
+plt.plot(dattest[1])
+plt.plot(dattest[2])
+plt.show()
+dattest = getdata(ptest)
+dattest[1]
+len(dattest)
+plt.show()
+    #plt.plot(histdat[1])
+    
+
+
 
 def parmreadin(_path_): # function using these indices
     parsable = os.listdir(_path_)
@@ -55,9 +94,9 @@ def parmrange(parms,parmsss):
     litall=list()
     for i in parms:
         ind1=(i[0]-1)
-	print(ind1)
+	#print(ind1)
         ind2=(i[1]-1)
-	print(ind2)
+	#print(ind2)
         litall.append(parmsss[ind1][ind2])
     v1=list()
     v2=list()
